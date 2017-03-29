@@ -5,10 +5,15 @@
  */
 package it.cnr.ilc.lc.omega.resourcesystem;
 
+import sirius.kernel.di.std.Register;
+import it.cnr.ilc.lc.omega.resourcesystem.spi.VirtualResourceSystemManagerSPI;
+
+
 /**
  *
  * @author simone
  */
-public interface VirtualResourceSystemManager {
+@Register(classes = {VirtualResourceSystemManagerSPI.class})
+public final class VirtualResourceSystemManager implements VirtualResourceSystemManagerSPI{
     
 }

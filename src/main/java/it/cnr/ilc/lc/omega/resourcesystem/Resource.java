@@ -5,7 +5,11 @@
  */
 package it.cnr.ilc.lc.omega.resourcesystem;
 
+import it.cnr.ilc.lc.omega.resourcesystem.spi.ResourceSystemComponentService;
+import java.io.PrintStream;
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import sirius.kernel.di.std.Part;
 
 /**
@@ -14,22 +18,34 @@ import sirius.kernel.di.std.Part;
  */
 public class Resource extends ResourceSystemComponent {
 
+    private static final Logger log = LogManager.getLogger(ResourceSystemComponent.class);
+
     @Part
-    private static ResourceSystemComponentManager resourceManager;
+    private static ResourceSystemComponentService resourceService;
+
+    Resource() {
+
+        super();
+        init();
+    }
+
+    private void init() {
+
+    }
 
     @Override
     public String getName() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return this.annotation.getData().getName();
     }
 
     @Override
     public String getDescription() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return this.annotation.getData().getDescription();
     }
 
     @Override
     public String getType() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return this.annotation.getData().getType();
     }
 
     @Override
@@ -39,7 +55,12 @@ public class Resource extends ResourceSystemComponent {
 
     @Override
     public ResourceSystemComponent add(ResourceSystemComponent component) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("You cannot add component to a Resource");
+    }
+
+    @Override
+    public ResourceSystemComponent add(List<ResourceSystemComponent> components) {
+        throw new UnsupportedOperationException("You cannot add components to a Resource");
     }
 
     @Override
@@ -49,7 +70,13 @@ public class Resource extends ResourceSystemComponent {
 
     @Override
     public List<ResourceSystemComponent> getChildren() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("There is no child. This is a leaf node"); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
+    @Override
+    public void print(PrintStream p) {
+        int pad = getDepth()* 3 + this.getName().length();
+        p.printf("%1$" + pad + "s [%s]\n", this.getName(), this.getType());
+    }
+
 }

@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package it.cnr.ilc.lc.omega.resourcesystem;
+package it.cnr.ilc.lc.omega.resourcesystem.spi;
 
 /**
  *
  * @author simone
  */
-public interface ResourceSystemComponentManager {
-    
+public interface ResourceSystemComponentService {
+    public String service(String context);
 }

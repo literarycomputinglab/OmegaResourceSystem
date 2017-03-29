@@ -13,7 +13,6 @@ import sirius.kernel.di.std.Register;
  * @author simone
  */
 
-@Register(classes = {VirtualResourceSystemManager.class})
-public class VirtualResourceSystemManagerSPI implements VirtualResourceSystemManager {
+public interface VirtualResourceSystemManagerSPI {
     
 }
