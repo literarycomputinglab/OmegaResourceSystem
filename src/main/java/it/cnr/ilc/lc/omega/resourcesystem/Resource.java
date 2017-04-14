@@ -5,15 +5,29 @@
  */
 package it.cnr.ilc.lc.omega.resourcesystem;
 
+import it.cnr.ilc.lc.omega.adt.annotation.CatalogItem;
+import it.cnr.ilc.lc.omega.adt.annotation.DublinCore;
+import it.cnr.ilc.lc.omega.annotation.catalog.ResourceSystemAnnotation;
+import it.cnr.ilc.lc.omega.core.ManagerAction;
+import it.cnr.ilc.lc.omega.core.annotation.AnnotationRelationType;
+import it.cnr.ilc.lc.omega.core.dto.ADTAnnotationSource;
+import it.cnr.ilc.lc.omega.core.dto.ADTAnnotationTarget;
+import it.cnr.ilc.lc.omega.core.dto.DTOValueRM;
+import it.cnr.ilc.lc.omega.entity.Annotation;
+import it.cnr.ilc.lc.omega.entity.Content;
+import it.cnr.ilc.lc.omega.exception.VirtualResourceSystemException;
 import it.cnr.ilc.lc.omega.resourcesystem.spi.ResourceSystemComponentService;
 import java.io.PrintStream;
+import java.net.URI;
 import java.util.List;
+import java.util.logging.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import sirius.kernel.di.std.Part;
 
 /**
  *
+ * @author angelo
  * @author simone
  */
 public class Resource extends ResourceSystemComponent {
@@ -29,8 +43,40 @@ public class Resource extends ResourceSystemComponent {
         init();
     }
 
+    Resource(Annotation<?, ResourceSystemAnnotation> annotation) {
+
+        super();
+        init(annotation);
+    }
+
+    private void init(Annotation<?, ResourceSystemAnnotation> annotation) {
+        this.annotation = annotation;
+        this.setUri(URI.create(annotation.getUri()));
+
+    }
+
     private void init() {
 
+    }
+
+    public static Resource load(URI uri) throws ManagerAction.ActionException {
+
+        Resource resource = null;
+        Annotation<?, ResourceSystemAnnotation> annotation = null;
+        try {
+            annotation = (Annotation<?, ResourceSystemAnnotation>) componentManager.loadAnnotation(uri, Content.class);
+        } catch (ManagerAction.ActionException e) {
+            throw new ManagerAction.ActionException(new Exception("Error while loading Resource System Collection annotation with URI " + uri, e));
+        }
+
+        if (annotation != null) {
+            resource = new Resource(annotation);
+
+        } else {
+            throw new ManagerAction.ActionException(new Exception("Resource System Collection annotation is null with URI " + uri));
+        }
+
+        return resource;
     }
 
     @Override
@@ -46,6 +92,26 @@ public class Resource extends ResourceSystemComponent {
     @Override
     public String getType() {
         return this.annotation.getData().getType();
+    }
+
+    @Override
+    public void setResourceContent(CatalogItem item) throws VirtualResourceSystemException {
+
+        if (item instanceof DublinCore) {
+            DublinCore<?> dc = (DublinCore<?>) item;
+            try {
+
+                ADTAnnotationSource src = DTOValueRM.instantiate(ADTAnnotationSource.class).withValue(this);
+                ADTAnnotationTarget trg = DTOValueRM.instantiate(ADTAnnotationTarget.class).withValue(dc);
+                componentManager.updateAnnotationRelation(src, trg, AnnotationRelationType.HAS_RESOURCE);
+
+            } catch (InstantiationException | IllegalAccessException | ManagerAction.ActionException ex) {
+                java.util.logging.Logger.getLogger(Resource.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            throw new VirtualResourceSystemException("Incompatible type of catalog item");
+        }
+
     }
 
     @Override
@@ -75,7 +141,7 @@ public class Resource extends ResourceSystemComponent {
 
     @Override
     public void print(PrintStream p) {
-        int pad = getDepth()* 3 + this.getName().length();
+        int pad = getDepth() * 3 + this.getName().length();
         p.printf("%1$" + pad + "s [%s]\n", this.getName(), this.getType());
     }
 

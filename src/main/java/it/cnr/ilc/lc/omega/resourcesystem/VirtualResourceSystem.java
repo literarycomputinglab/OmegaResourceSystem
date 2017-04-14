@@ -7,6 +7,7 @@ package it.cnr.ilc.lc.omega.resourcesystem;
 
 /**
  *
+ * @author angelo
  * @author simone
  */
 public final class VirtualResourceSystem {

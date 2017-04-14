@@ -5,12 +5,18 @@
  */
 package it.cnr.ilc.lc.omega.resourcesystem;
 
+import it.cnr.ilc.lc.omega.annotation.catalog.ResourceSystemAnnotation;
 import it.cnr.ilc.lc.omega.core.ManagerAction;
 import it.cnr.ilc.lc.omega.core.annotation.AnnotationRelationType;
+import it.cnr.ilc.lc.omega.entity.Annotation;
+import it.cnr.ilc.lc.omega.entity.AnnotationRelation;
+import it.cnr.ilc.lc.omega.entity.Content;
 import it.cnr.ilc.lc.omega.exception.VirtualResourceSystemException;
 import it.cnr.ilc.lc.omega.resourcesystem.spi.ResourceSystemComponentService;
 import java.io.PrintStream;
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,6 +24,7 @@ import sirius.kernel.di.std.Part;
 
 /**
  *
+ * @author angelo
  * @author simone
  */
 public class Collection extends ResourceSystemComponent {
@@ -34,8 +41,60 @@ public class Collection extends ResourceSystemComponent {
         init();
     }
 
+    Collection(Annotation<?, ResourceSystemAnnotation> annotation) throws VirtualResourceSystemException {
+        super();
+        init(annotation);
+        initComponents();
+    }
+
+    private void init(Annotation<?, ResourceSystemAnnotation> annotation) throws VirtualResourceSystemException {
+        this.annotation = annotation;
+        this.setUri(URI.create(annotation.getUri()));
+    }
+
     private void init() {
 
+    }
+
+    public static Collection load(URI uri) throws ManagerAction.ActionException, VirtualResourceSystemException {
+
+        Collection collection = null;
+        Annotation<?, ResourceSystemAnnotation> annotation = null;
+        try {
+            annotation = (Annotation<?, ResourceSystemAnnotation>) componentManager.loadAnnotation(uri, Content.class);
+        } catch (ManagerAction.ActionException e) {
+            throw new ManagerAction.ActionException(new Exception("Error while loading Resource System Collection annotation with URI " + uri, e));
+        }
+
+        if (annotation != null) {
+            collection = new Collection(annotation);
+
+        } else {
+            throw new ManagerAction.ActionException(new Exception("Resource System Collection annotation is null with URI " + uri));
+        }
+
+        return collection;
+    }
+
+    private void initComponents() throws VirtualResourceSystemException {
+
+        for (Iterator< AnnotationRelation> iterator = annotation.getRelations();
+                iterator.hasNext();) {
+            AnnotationRelation ann = iterator.next();
+            if (ann.getType().equals(AnnotationRelationType.HAS_CHILD.name())) {
+                Annotation<? extends Content, ResourceSystemAnnotation> target = (Annotation<?, ResourceSystemAnnotation>) ann.getTargetAnnotation();
+                URI uri = URI.create(target.getUri());
+                if ("folder/directory".equals(target.getData().getType())) { //FIXME contruire un ENUM per il type (item, folder)
+                    components.add(ResourceSystemComponent.load(Collection.class, uri));
+                } else if ("item".equals(target.getData().getType())) { //FIXME contruire un ENUM per il type (item, folder)
+                    components.add(ResourceSystemComponent.load(Resource.class, uri));
+
+                } else {
+                    throw new VirtualResourceSystemException("Error while initialize the Resource System Component");
+                }
+            }
+
+        }
     }
 
     @Override

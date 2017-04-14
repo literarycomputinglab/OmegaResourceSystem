@@ -26,6 +26,12 @@
             <artifactId>OmegaCore</artifactId>
             <version>1.0.0</version>
         </dependency>
+        
+       <dependency>
+            <groupId>it.cnr.ilc.lc</groupId>
+            <artifactId>OmegaAnnotation</artifactId>
+            <version>1.0.0</version>
+        </dependency>
   
     </dependencies>
     <name>OmegaResourceSystem</name>

@@ -10,6 +10,7 @@ import sirius.kernel.di.std.Register;
 
 /**
  *
+ * @author angelo
  * @author simone
  */
 @Register(classes = {ResourceSystemComponentService.class})

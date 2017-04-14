@@ -11,6 +11,7 @@ import it.cnr.ilc.lc.omega.resourcesystem.spi.VirtualResourceSystemManagerSPI;
 
 /**
  *
+ * @author angelo
  * @author simone
  */
 @Register(classes = {VirtualResourceSystemManagerSPI.class})

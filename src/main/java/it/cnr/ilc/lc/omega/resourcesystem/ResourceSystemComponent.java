@@ -5,20 +5,21 @@
  */
 package it.cnr.ilc.lc.omega.resourcesystem;
 
+import it.cnr.ilc.lc.omega.adt.annotation.CatalogItem;
 import it.cnr.ilc.lc.omega.annotation.catalog.ResourceSystemAnnotation;
 import it.cnr.ilc.lc.omega.annotation.catalog.ResourceSystemAnnotationBuilder;
 import it.cnr.ilc.lc.omega.core.ManagerAction;
 import it.cnr.ilc.lc.omega.core.ResourceManager;
 import it.cnr.ilc.lc.omega.core.datatype.ADTAbstractAnnotation;
-import it.cnr.ilc.lc.omega.core.datatype.ADTAnnotation;
 import it.cnr.ilc.lc.omega.entity.Annotation;
-import it.cnr.ilc.lc.omega.entity.AnnotationRelation;
 import it.cnr.ilc.lc.omega.exception.VirtualResourceSystemException;
 import it.cnr.ilc.lc.omega.resourcesystem.dto.RSCDescription;
 import it.cnr.ilc.lc.omega.resourcesystem.dto.RSCName;
 import it.cnr.ilc.lc.omega.resourcesystem.dto.RSCParent;
 import it.cnr.ilc.lc.omega.resourcesystem.dto.RSCType;
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
@@ -28,6 +29,7 @@ import sirius.kernel.di.std.Part;
 
 /**
  *
+ * @author angelo
  * @author simone
  */
 public abstract class ResourceSystemComponent extends ADTAbstractAnnotation {
@@ -86,6 +88,11 @@ public abstract class ResourceSystemComponent extends ADTAbstractAnnotation {
 
     public abstract String getType();
 
+    public void setResourceContent(CatalogItem item) throws VirtualResourceSystemException {
+
+        throw new VirtualResourceSystemException("Attempting to set a resource content by a not implemented method");
+    }
+
     public Integer getDepth() {
 
         return this.annotation.getData().getDepth();
@@ -96,7 +103,6 @@ public abstract class ResourceSystemComponent extends ADTAbstractAnnotation {
         return annotation;
     }
 
-    
     public static <T extends ResourceSystemComponent> T of(Class<T> clazz, URI uri) {
 
         T t = null;
@@ -107,6 +113,23 @@ public abstract class ResourceSystemComponent extends ADTAbstractAnnotation {
             log.error(ex);
         }
 
+        return t;
+    }
+
+    public static <T extends ResourceSystemComponent> T load(Class<T> clazz, URI uri) {
+
+        log.info("loading resource identified by URI: " + uri.toASCIIString());
+        T t = null;
+        try {
+            Method load = clazz.getDeclaredMethod("load", URI.class);
+            t = (T) load.invoke(null, uri);
+            log.info("loaded resource identified by URI: " + t.getName());
+
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            log.error(ex);
+        }
+        
+        t.print(System.out);
         return t;
     }
 
