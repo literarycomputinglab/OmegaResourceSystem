@@ -5,13 +5,16 @@
  */
 package it.cnr.ilc.lc.omega.resourcesystem;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.cnr.ilc.lc.omega.adt.annotation.CatalogItem;
 import it.cnr.ilc.lc.omega.annotation.catalog.ResourceSystemAnnotation;
 import it.cnr.ilc.lc.omega.annotation.catalog.ResourceSystemAnnotationBuilder;
 import it.cnr.ilc.lc.omega.core.ManagerAction;
 import it.cnr.ilc.lc.omega.core.ResourceManager;
+import it.cnr.ilc.lc.omega.core.annotation.AnnotationRelationType;
 import it.cnr.ilc.lc.omega.core.datatype.ADTAbstractAnnotation;
 import it.cnr.ilc.lc.omega.entity.Annotation;
+import it.cnr.ilc.lc.omega.entity.AnnotationRelation;
 import it.cnr.ilc.lc.omega.exception.VirtualResourceSystemException;
 import it.cnr.ilc.lc.omega.resourcesystem.dto.RSCDescription;
 import it.cnr.ilc.lc.omega.resourcesystem.dto.RSCName;
@@ -43,7 +46,7 @@ public abstract class ResourceSystemComponent extends ADTAbstractAnnotation {
 
     protected Annotation<?, ResourceSystemAnnotation> annotation; // metterlo qui oppure metterlo per ciascun oggetto concreto?
 
-    protected URI getUri() {
+    public URI getUri() {
         return uri;
     }
 
@@ -61,6 +64,7 @@ public abstract class ResourceSystemComponent extends ADTAbstractAnnotation {
         return Collection.class.isInstance(this);
     }
 
+    @JsonIgnore
     public Iterator<ResourceSystemComponent> getIterator() {
 
         return getChildren().iterator(); //le Recource (foglie) hanno una lista vuota che memorizza i figli (che non ha)
@@ -99,6 +103,7 @@ public abstract class ResourceSystemComponent extends ADTAbstractAnnotation {
     }
 
     @Override
+    @JsonIgnore
     protected Annotation<?, ResourceSystemAnnotation> getAnnotation() {
         return annotation;
     }
@@ -116,7 +121,7 @@ public abstract class ResourceSystemComponent extends ADTAbstractAnnotation {
         return t;
     }
 
-    public static <T extends ResourceSystemComponent> T load(Class<T> clazz, URI uri) {
+    public static <T extends ResourceSystemComponent> T load(Class<T> clazz, URI uri) throws VirtualResourceSystemException {
 
         log.info("loading resource identified by URI: " + uri.toASCIIString());
         T t = null;
@@ -125,11 +130,15 @@ public abstract class ResourceSystemComponent extends ADTAbstractAnnotation {
             t = (T) load.invoke(null, uri);
             log.info("loaded resource identified by URI: " + t.getName());
 
-        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            log.error(ex);
+        } catch (InvocationTargetException ex) {
+            log.warn("InvocationTargetException caused by: " + ex.getCause());
+            if (ex.getCause() instanceof VirtualResourceSystemException) {
+                throw (VirtualResourceSystemException) ex.getCause();
+            }
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException ee) {
+            log.error(ee);
         }
-        
-        t.print(System.out);
+
         return t;
     }
 
@@ -168,4 +177,7 @@ public abstract class ResourceSystemComponent extends ADTAbstractAnnotation {
     public abstract List<ResourceSystemComponent> getChildren();
 
     public abstract void print(PrintStream p);
+
+    public abstract URI getCatalogDescriptionURI();
+    
 }

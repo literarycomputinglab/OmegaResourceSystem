@@ -5,21 +5,23 @@
  */
 package it.cnr.ilc.lc.omega.resourcesystem.dto;
 
+import it.cnr.ilc.lc.omega.annotation.catalog.ResourceSystemAnnotationType;
+
 /**
  *
  * @author simone
  */
-public class RSCType implements DTOValueRSC<String>{
+public class RSCType implements DTOValueRSC<ResourceSystemAnnotationType>{
     
-    private String type;
+    private ResourceSystemAnnotationType type;
 
     @Override
-    public String getValue() {
+    public ResourceSystemAnnotationType getValue() {
         return type;
     }
 
     @Override
-    public <K extends DTOValueRSC<String>> K withValue(String type) {
+    public <K extends DTOValueRSC<ResourceSystemAnnotationType>> K withValue(ResourceSystemAnnotationType type) {
         this.type = type;
         return (K) this;
     }

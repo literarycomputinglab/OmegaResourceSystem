@@ -5,7 +5,9 @@
  */
 package it.cnr.ilc.lc.omega.resourcesystem;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.cnr.ilc.lc.omega.annotation.catalog.ResourceSystemAnnotation;
+import it.cnr.ilc.lc.omega.annotation.catalog.ResourceSystemAnnotationType;
 import it.cnr.ilc.lc.omega.core.ManagerAction;
 import it.cnr.ilc.lc.omega.core.annotation.AnnotationRelationType;
 import it.cnr.ilc.lc.omega.entity.Annotation;
@@ -62,16 +64,27 @@ public class Collection extends ResourceSystemComponent {
         Annotation<?, ResourceSystemAnnotation> annotation = null;
         try {
             annotation = (Annotation<?, ResourceSystemAnnotation>) componentManager.loadAnnotation(uri, Content.class);
+            if (annotation != null) {
+                if (!ResourceSystemAnnotationType.COLLECTION.name().equals(annotation.getData().getType())) {
+                    String err = "Incompatible type of loaded annotation: Request " + ResourceSystemAnnotationType.COLLECTION.name()
+                            + " Found " + annotation.getData().getType();
+                    annotation = null;
+                    log.error(err);
+
+                    throw new VirtualResourceSystemException(new Exception(err + uri));
+
+                } else {
+                    collection = new Collection(annotation);
+                }
+            } else { 
+                throw new ManagerAction.ActionException(new Exception("Resource System Collection annotation is null with URI " + uri));
+
+            }
         } catch (ManagerAction.ActionException e) {
             throw new ManagerAction.ActionException(new Exception("Error while loading Resource System Collection annotation with URI " + uri, e));
         }
 
-        if (annotation != null) {
-            collection = new Collection(annotation);
-
-        } else {
-            throw new ManagerAction.ActionException(new Exception("Resource System Collection annotation is null with URI " + uri));
-        }
+       
 
         return collection;
     }
@@ -80,15 +93,14 @@ public class Collection extends ResourceSystemComponent {
 
         for (Iterator< AnnotationRelation> iterator = annotation.getRelations();
                 iterator.hasNext();) {
-            AnnotationRelation ann = iterator.next();
-            if (ann.getType().equals(AnnotationRelationType.HAS_CHILD.name())) {
-                Annotation<? extends Content, ResourceSystemAnnotation> target = (Annotation<?, ResourceSystemAnnotation>) ann.getTargetAnnotation();
+            AnnotationRelation annRel = iterator.next();
+            if (annRel.getType().equals(AnnotationRelationType.HAS_CHILD.name())) {
+                Annotation<? extends Content, ResourceSystemAnnotation> target = (Annotation<?, ResourceSystemAnnotation>) annRel.getTargetAnnotation();
                 URI uri = URI.create(target.getUri());
-                if ("folder/directory".equals(target.getData().getType())) { //FIXME contruire un ENUM per il type (item, folder)
+                if (ResourceSystemAnnotationType.COLLECTION.name().equals(target.getData().getType())) { //FIXME contruire un ENUM per il type (item, folder)
                     components.add(ResourceSystemComponent.load(Collection.class, uri));
-                } else if ("item".equals(target.getData().getType())) { //FIXME contruire un ENUM per il type (item, folder)
+                } else if (ResourceSystemAnnotationType.RESOURCE.name().equals(target.getData().getType())) { //FIXME contruire un ENUM per il type (item, folder)
                     components.add(ResourceSystemComponent.load(Resource.class, uri));
-
                 } else {
                     throw new VirtualResourceSystemException("Error while initialize the Resource System Component");
                 }
@@ -113,6 +125,7 @@ public class Collection extends ResourceSystemComponent {
     }
 
     @Override
+    @JsonIgnore
     public VirtualResourceSystemAttribute getAttribute() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -168,4 +181,11 @@ public class Collection extends ResourceSystemComponent {
         }
     }
 
+    @Override
+    public URI getCatalogDescriptionURI() {
+        
+        return URI.create("");
+    }
+
+    
 }

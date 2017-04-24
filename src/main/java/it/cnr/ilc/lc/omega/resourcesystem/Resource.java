@@ -5,20 +5,24 @@
  */
 package it.cnr.ilc.lc.omega.resourcesystem;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.cnr.ilc.lc.omega.adt.annotation.CatalogItem;
 import it.cnr.ilc.lc.omega.adt.annotation.DublinCore;
 import it.cnr.ilc.lc.omega.annotation.catalog.ResourceSystemAnnotation;
+import it.cnr.ilc.lc.omega.annotation.catalog.ResourceSystemAnnotationType;
 import it.cnr.ilc.lc.omega.core.ManagerAction;
 import it.cnr.ilc.lc.omega.core.annotation.AnnotationRelationType;
 import it.cnr.ilc.lc.omega.core.dto.ADTAnnotationSource;
 import it.cnr.ilc.lc.omega.core.dto.ADTAnnotationTarget;
 import it.cnr.ilc.lc.omega.core.dto.DTOValueRM;
 import it.cnr.ilc.lc.omega.entity.Annotation;
+import it.cnr.ilc.lc.omega.entity.AnnotationRelation;
 import it.cnr.ilc.lc.omega.entity.Content;
 import it.cnr.ilc.lc.omega.exception.VirtualResourceSystemException;
 import it.cnr.ilc.lc.omega.resourcesystem.spi.ResourceSystemComponentService;
 import java.io.PrintStream;
 import java.net.URI;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import org.apache.logging.log4j.LogManager;
@@ -65,6 +69,13 @@ public class Resource extends ResourceSystemComponent {
         Annotation<?, ResourceSystemAnnotation> annotation = null;
         try {
             annotation = (Annotation<?, ResourceSystemAnnotation>) componentManager.loadAnnotation(uri, Content.class);
+            if (!ResourceSystemAnnotationType.RESOURCE.name().equals(annotation.getData().getType())) {
+                String err = "Incompatible type of loaded annotation: Rrequest " + ResourceSystemAnnotationType.RESOURCE.name()
+                        + " Found " + annotation.getData().getType();
+                annotation = null;
+                log.error(err);
+                throw new ManagerAction.ActionException(new Exception(err + uri));
+            }
         } catch (ManagerAction.ActionException e) {
             throw new ManagerAction.ActionException(new Exception("Error while loading Resource System Collection annotation with URI " + uri, e));
         }
@@ -115,6 +126,7 @@ public class Resource extends ResourceSystemComponent {
     }
 
     @Override
+    @JsonIgnore
     public VirtualResourceSystemAttribute getAttribute() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -135,6 +147,7 @@ public class Resource extends ResourceSystemComponent {
     }
 
     @Override
+    @JsonIgnore
     public List<ResourceSystemComponent> getChildren() {
         throw new UnsupportedOperationException("There is no child. This is a leaf node"); //To change body of generated methods, choose Tools | Templates.
     }
@@ -145,4 +158,20 @@ public class Resource extends ResourceSystemComponent {
         p.printf("%1$" + pad + "s [%s]\n", this.getName(), this.getType());
     }
 
+    @Override
+    public URI getCatalogDescriptionURI() {
+
+        URI uri = null;
+        for (Iterator<AnnotationRelation> iterator = annotation.getRelations(); iterator.hasNext();) {
+            AnnotationRelation annRel = iterator.next();
+            if (annRel.getType().equals(AnnotationRelationType.HAS_RESOURCE.name())) {
+                uri = URI.create(annRel.getTargetAnnotation().getUri());
+                log.info("Retrieved URI : " + uri);
+                return uri;
+            }
+        }
+        log.warn("No description found for resourcesystem idefied by uri: " + this.getUri().toASCIIString());
+
+        return uri;
+    }
 }
