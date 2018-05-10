@@ -109,15 +109,12 @@ public class Resource extends ResourceSystemComponent {
     public void setResourceContent(CatalogItem item) throws VirtualResourceSystemException {
 
         try {
-
             ADTAnnotationSource src = DTOValueRM.instantiate(ADTAnnotationSource.class).withValue(this);
             ADTAnnotationTarget trg = DTOValueRM.instantiate(ADTAnnotationTarget.class).withValue(item);
             componentManager.updateAnnotationRelation(src, trg, AnnotationRelationType.HAS_RESOURCE);
-
         } catch (InstantiationException | IllegalAccessException | ManagerAction.ActionException ex) {
             java.util.logging.Logger.getLogger(Resource.class.getName()).log(Level.SEVERE, null, ex);
         }
-
     }
 
     @Override
