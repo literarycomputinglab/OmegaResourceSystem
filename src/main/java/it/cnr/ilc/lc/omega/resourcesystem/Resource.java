@@ -108,19 +108,14 @@ public class Resource extends ResourceSystemComponent {
     @Override
     public void setResourceContent(CatalogItem item) throws VirtualResourceSystemException {
 
-        if (item instanceof DublinCore) {
-            DublinCore<?> dc = (DublinCore<?>) item;
-            try {
+        try {
 
-                ADTAnnotationSource src = DTOValueRM.instantiate(ADTAnnotationSource.class).withValue(this);
-                ADTAnnotationTarget trg = DTOValueRM.instantiate(ADTAnnotationTarget.class).withValue(dc);
-                componentManager.updateAnnotationRelation(src, trg, AnnotationRelationType.HAS_RESOURCE);
+            ADTAnnotationSource src = DTOValueRM.instantiate(ADTAnnotationSource.class).withValue(this);
+            ADTAnnotationTarget trg = DTOValueRM.instantiate(ADTAnnotationTarget.class).withValue(item);
+            componentManager.updateAnnotationRelation(src, trg, AnnotationRelationType.HAS_RESOURCE);
 
-            } catch (InstantiationException | IllegalAccessException | ManagerAction.ActionException ex) {
-                java.util.logging.Logger.getLogger(Resource.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        } else {
-            throw new VirtualResourceSystemException("Incompatible type of catalog item");
+        } catch (InstantiationException | IllegalAccessException | ManagerAction.ActionException ex) {
+            java.util.logging.Logger.getLogger(Resource.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }
