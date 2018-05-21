@@ -24,8 +24,10 @@ import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import sirius.kernel.di.std.Part;
@@ -131,9 +133,13 @@ public abstract class ResourceSystemComponent extends ADTAbstractAnnotation {
             log.info("loaded resource identified by URI: " + t.getName());
 
         } catch (InvocationTargetException ex) {
-            log.warn("InvocationTargetException caused by: " + ex.getCause());
+            System.err.println("BOTTA GROSSA:" + ExceptionUtils.getRootCauseMessage(ex));
+            log.error("InvocationTargetException caused by: ", ex);
             if (ex.getCause() instanceof VirtualResourceSystemException) {
                 throw (VirtualResourceSystemException) ex.getCause();
+            }
+            if (ExceptionUtils.getRootCause(ex) instanceof ClassCastException) {
+                throw new VirtualResourceSystemException(ExceptionUtils.getRootCause(ex));
             }
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException ee) {
             log.error(ee);
@@ -179,5 +185,5 @@ public abstract class ResourceSystemComponent extends ADTAbstractAnnotation {
     public abstract void print(PrintStream p);
 
     public abstract URI getCatalogDescriptionURI();
-    
+
 }

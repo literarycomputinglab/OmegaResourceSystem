@@ -23,5 +23,14 @@ public class RSCDescription implements DTOValueRSC<String>{
         this.description = description;
         return (K) this;
     }
+
+    RSCDescription() {
+    }
+
+    RSCDescription(String description) {
+        this.description = description;
+    }
+    
+    
     
 }

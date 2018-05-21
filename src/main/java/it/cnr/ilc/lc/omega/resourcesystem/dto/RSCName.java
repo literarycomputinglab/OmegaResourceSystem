@@ -23,6 +23,16 @@ public class RSCName implements DTOValueRSC<String>{
         this.name = name;
         return (K) this;
     }
+
+    RSCName() {
+    }
+
+    
+    RSCName(String name) {
+        this.name = name;
+    }
+
+    
     
     
 }
