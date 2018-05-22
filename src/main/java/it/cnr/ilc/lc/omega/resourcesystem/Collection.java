@@ -76,7 +76,7 @@ public class Collection extends ResourceSystemComponent {
                 } else {
                     collection = new Collection(annotation);
                 }
-            } else { 
+            } else {
                 throw new ManagerAction.ActionException(new Exception("Resource System Collection annotation is null with URI " + uri));
 
             }
@@ -84,23 +84,45 @@ public class Collection extends ResourceSystemComponent {
             throw new ManagerAction.ActionException(new Exception("Error while loading Resource System Collection annotation with URI " + uri, e));
         }
 
-       
+        return collection;
+    }
+
+    public static Collection load(Annotation<?, ResourceSystemAnnotation> annotation) throws ManagerAction.ActionException, VirtualResourceSystemException {
+        Collection collection = null;
+        try {
+            if (annotation != null) {
+                if (!ResourceSystemAnnotationType.COLLECTION.name().equals(annotation.getData().getType())) {
+                    String err = "Incompatible type of loaded annotation: Request " + ResourceSystemAnnotationType.COLLECTION.name()
+                            + " Found " + annotation.getData().getType();
+                    annotation = null;
+                    log.error(err);
+
+                    throw new VirtualResourceSystemException(new Exception(err + annotation.getUri()));
+
+                } else {
+                    collection = new Collection(annotation);
+                }
+            } else {
+                throw new ManagerAction.ActionException(new Exception("Resource System Collection annotation is null with URI " + annotation.getUri()));
+
+            }
+        } catch (ManagerAction.ActionException e) {
+            throw new ManagerAction.ActionException(new Exception("Error while loading Resource System Collection annotation with URI " + annotation.getUri(), e));
+        }
 
         return collection;
     }
 
     private void initComponents() throws VirtualResourceSystemException {
 
-        for (Iterator< AnnotationRelation> iterator = annotation.getRelations();
-                iterator.hasNext();) {
-            AnnotationRelation annRel = iterator.next();
+        for (AnnotationRelation annRel : annotation.getRelations()) {
+
             if (annRel.getType().equals(AnnotationRelationType.HAS_CHILD.name())) {
                 Annotation<? extends Content, ResourceSystemAnnotation> target = (Annotation<?, ResourceSystemAnnotation>) annRel.getTargetAnnotation();
-                URI uri = URI.create(target.getUri());
                 if (ResourceSystemAnnotationType.COLLECTION.name().equals(target.getData().getType())) { //FIXME contruire un ENUM per il type (item, folder)
-                    components.add(ResourceSystemComponent.load(Collection.class, uri));
+                    components.add(ResourceSystemComponent.load(Collection.class, target));
                 } else if (ResourceSystemAnnotationType.RESOURCE.name().equals(target.getData().getType())) { //FIXME contruire un ENUM per il type (item, folder)
-                    components.add(ResourceSystemComponent.load(Resource.class, uri));
+                    components.add(ResourceSystemComponent.load(Resource.class, target));
                 } else {
                     throw new VirtualResourceSystemException("Error while initialize the Resource System Component");
                 }
@@ -183,9 +205,8 @@ public class Collection extends ResourceSystemComponent {
 
     @Override
     public URI getCatalogDescriptionURI() {
-        
+
         return URI.create("");
     }
 
-    
 }

@@ -123,7 +123,32 @@ public abstract class ResourceSystemComponent extends ADTAbstractAnnotation {
         return t;
     }
 
-    public static <T extends ResourceSystemComponent> T load(Class<T> clazz, URI uri) throws VirtualResourceSystemException {
+   public static <T extends ResourceSystemComponent> T load(Class<T> clazz, Annotation<?, ResourceSystemAnnotation> ann) throws VirtualResourceSystemException {
+
+        log.info("loading resource identified by URI: " + ann.getUri());
+        T t = null;
+        try {
+            Method load = clazz.getDeclaredMethod("load", Annotation.class);
+            t = (T) load.invoke(null, ann);
+            log.info("loaded resource identified by URI: " + t.getName());
+
+        } catch (InvocationTargetException ex) {
+            System.err.println("BOTTA GROSSA:" + ExceptionUtils.getRootCauseMessage(ex));
+            log.error("InvocationTargetException caused by: ", ex);
+            if (ex.getCause() instanceof VirtualResourceSystemException) {
+                throw (VirtualResourceSystemException) ex.getCause();
+            }
+            if (ExceptionUtils.getRootCause(ex) instanceof ClassCastException) {
+                throw new VirtualResourceSystemException(ExceptionUtils.getRootCause(ex));
+            }
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException ee) {
+            log.error(ee);
+        }
+
+        return t;
+    }
+
+   public static <T extends ResourceSystemComponent> T load(Class<T> clazz, URI uri) throws VirtualResourceSystemException {
 
         log.info("loading resource identified by URI: " + uri.toASCIIString());
         T t = null;

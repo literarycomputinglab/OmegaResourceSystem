@@ -63,12 +63,36 @@ public class Resource extends ResourceSystemComponent {
 
     }
 
+    public static Resource load(Annotation<?, ResourceSystemAnnotation> annotation) throws ManagerAction.ActionException {
+
+        try {
+            if (annotation != null) {
+                if (!ResourceSystemAnnotationType.RESOURCE.name().equals(annotation.getData().getType())) {
+                    String err = "Incompatible type of loaded annotation: Rrequest " + ResourceSystemAnnotationType.RESOURCE.name()
+                            + " Found " + annotation.getData().getType();
+                    annotation = null;
+                    log.error(err);
+                    throw new ManagerAction.ActionException(new Exception(err + annotation.getUri()));
+                }
+            } else {
+                throw new ManagerAction.ActionException(new Exception("Resource System Collection annotation is null with URI " + annotation.getUri()));
+            }
+        } catch (ManagerAction.ActionException e) {
+            throw new ManagerAction.ActionException(new Exception("Error while loading Resource System Collection annotation with URI " + annotation.getUri(), e));
+        }
+
+        return new Resource(annotation);
+
+    }
+
     public static Resource load(URI uri) throws ManagerAction.ActionException {
 
         Resource resource = null;
         Annotation<?, ResourceSystemAnnotation> annotation = null;
+
         try {
-            annotation = (Annotation<?, ResourceSystemAnnotation>) componentManager.loadAnnotation(uri, Content.class);
+            annotation = (Annotation<?, ResourceSystemAnnotation>) componentManager.loadAnnotation(uri, Content.class
+            );
             if (!ResourceSystemAnnotationType.RESOURCE.name().equals(annotation.getData().getType())) {
                 String err = "Incompatible type of loaded annotation: Rrequest " + ResourceSystemAnnotationType.RESOURCE.name()
                         + " Found " + annotation.getData().getType();
@@ -109,8 +133,10 @@ public class Resource extends ResourceSystemComponent {
     public void setResourceContent(CatalogItem item) throws VirtualResourceSystemException {
 
         try {
-            ADTAnnotationSource src = DTOValueRM.instantiate(ADTAnnotationSource.class).withValue(this);
-            ADTAnnotationTarget trg = DTOValueRM.instantiate(ADTAnnotationTarget.class).withValue(item);
+            ADTAnnotationSource src = DTOValueRM.instantiate(ADTAnnotationSource.class
+            ).withValue(this);
+            ADTAnnotationTarget trg = DTOValueRM.instantiate(ADTAnnotationTarget.class
+            ).withValue(item);
             componentManager.updateAnnotationRelation(src, trg, AnnotationRelationType.HAS_RESOURCE);
         } catch (InstantiationException | IllegalAccessException | ManagerAction.ActionException ex) {
             log.error(ex);
@@ -154,8 +180,8 @@ public class Resource extends ResourceSystemComponent {
     public URI getCatalogDescriptionURI() {
 
         URI uri = null;
-        for (Iterator<AnnotationRelation> iterator = annotation.getRelations(); iterator.hasNext();) {
-            AnnotationRelation annRel = iterator.next();
+        for (AnnotationRelation annRel : annotation.getRelations()) {
+
             if (annRel.getType().equals(AnnotationRelationType.HAS_RESOURCE.name())) {
                 uri = URI.create(annRel.getTargetAnnotation().getUri());
                 log.info("Retrieved URI : " + uri);
