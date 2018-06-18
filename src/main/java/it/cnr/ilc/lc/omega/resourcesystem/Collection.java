@@ -13,12 +13,12 @@ import it.cnr.ilc.lc.omega.core.annotation.AnnotationRelationType;
 import it.cnr.ilc.lc.omega.entity.Annotation;
 import it.cnr.ilc.lc.omega.entity.AnnotationRelation;
 import it.cnr.ilc.lc.omega.entity.Content;
+import it.cnr.ilc.lc.omega.entity.TextContent;
 import it.cnr.ilc.lc.omega.exception.VirtualResourceSystemException;
 import it.cnr.ilc.lc.omega.resourcesystem.spi.ResourceSystemComponentService;
 import java.io.PrintStream;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -208,5 +208,11 @@ public class Collection extends ResourceSystemComponent {
 
         return URI.create("");
     }
+
+    @Override
+    public boolean isRemovable() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
 
 }

@@ -11,10 +11,9 @@ import it.cnr.ilc.lc.omega.annotation.catalog.ResourceSystemAnnotation;
 import it.cnr.ilc.lc.omega.annotation.catalog.ResourceSystemAnnotationBuilder;
 import it.cnr.ilc.lc.omega.core.ManagerAction;
 import it.cnr.ilc.lc.omega.core.ResourceManager;
-import it.cnr.ilc.lc.omega.core.annotation.AnnotationRelationType;
 import it.cnr.ilc.lc.omega.core.datatype.ADTAbstractAnnotation;
 import it.cnr.ilc.lc.omega.entity.Annotation;
-import it.cnr.ilc.lc.omega.entity.AnnotationRelation;
+import it.cnr.ilc.lc.omega.entity.TextContent;
 import it.cnr.ilc.lc.omega.exception.VirtualResourceSystemException;
 import it.cnr.ilc.lc.omega.resourcesystem.dto.RSCDescription;
 import it.cnr.ilc.lc.omega.resourcesystem.dto.RSCName;
@@ -24,7 +23,6 @@ import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -110,6 +108,11 @@ public abstract class ResourceSystemComponent extends ADTAbstractAnnotation {
         return annotation;
     }
 
+    @Override
+    protected void setAnnotation(Annotation<?, ?> annotation) {
+        this.annotation = (Annotation<?, ResourceSystemAnnotation>) annotation;
+    }
+
     public static <T extends ResourceSystemComponent> T of(Class<T> clazz, URI uri) {
 
         T t = null;
@@ -123,7 +126,7 @@ public abstract class ResourceSystemComponent extends ADTAbstractAnnotation {
         return t;
     }
 
-   public static <T extends ResourceSystemComponent> T load(Class<T> clazz, Annotation<?, ResourceSystemAnnotation> ann) throws VirtualResourceSystemException {
+    public static <T extends ResourceSystemComponent> T load(Class<T> clazz, Annotation<?, ResourceSystemAnnotation> ann) throws VirtualResourceSystemException {
 
         log.info("loading resource identified by URI: " + ann.getUri());
         T t = null;
@@ -148,7 +151,7 @@ public abstract class ResourceSystemComponent extends ADTAbstractAnnotation {
         return t;
     }
 
-   public static <T extends ResourceSystemComponent> T load(Class<T> clazz, URI uri) throws VirtualResourceSystemException {
+    public static <T extends ResourceSystemComponent> T load(Class<T> clazz, URI uri) throws VirtualResourceSystemException {
 
         log.info("loading resource identified by URI: " + uri.toASCIIString());
         T t = null;
@@ -192,6 +195,7 @@ public abstract class ResourceSystemComponent extends ADTAbstractAnnotation {
         return (T) this;
     }
 
+    @Override
     public void save() throws ManagerAction.ActionException {
         // controllare che annotation non sia null
         componentManager.saveAnnotation(annotation);

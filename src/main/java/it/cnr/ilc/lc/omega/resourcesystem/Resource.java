@@ -7,7 +7,6 @@ package it.cnr.ilc.lc.omega.resourcesystem;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.cnr.ilc.lc.omega.adt.annotation.CatalogItem;
-import it.cnr.ilc.lc.omega.adt.annotation.DublinCore;
 import it.cnr.ilc.lc.omega.annotation.catalog.ResourceSystemAnnotation;
 import it.cnr.ilc.lc.omega.annotation.catalog.ResourceSystemAnnotationType;
 import it.cnr.ilc.lc.omega.core.ManagerAction;
@@ -18,13 +17,12 @@ import it.cnr.ilc.lc.omega.core.dto.DTOValueRM;
 import it.cnr.ilc.lc.omega.entity.Annotation;
 import it.cnr.ilc.lc.omega.entity.AnnotationRelation;
 import it.cnr.ilc.lc.omega.entity.Content;
+import it.cnr.ilc.lc.omega.entity.TextContent;
 import it.cnr.ilc.lc.omega.exception.VirtualResourceSystemException;
 import it.cnr.ilc.lc.omega.resourcesystem.spi.ResourceSystemComponentService;
 import java.io.PrintStream;
 import java.net.URI;
-import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import sirius.kernel.di.std.Part;
@@ -192,4 +190,10 @@ public class Resource extends ResourceSystemComponent {
 
         return uri;
     }
+
+    @Override
+    public boolean isRemovable() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }
