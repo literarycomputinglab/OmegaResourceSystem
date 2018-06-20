@@ -13,7 +13,6 @@ import it.cnr.ilc.lc.omega.core.ManagerAction;
 import it.cnr.ilc.lc.omega.core.ResourceManager;
 import it.cnr.ilc.lc.omega.core.datatype.ADTAbstractAnnotation;
 import it.cnr.ilc.lc.omega.entity.Annotation;
-import it.cnr.ilc.lc.omega.entity.TextContent;
 import it.cnr.ilc.lc.omega.exception.VirtualResourceSystemException;
 import it.cnr.ilc.lc.omega.resourcesystem.dto.RSCDescription;
 import it.cnr.ilc.lc.omega.resourcesystem.dto.RSCName;
@@ -210,6 +209,10 @@ public abstract class ResourceSystemComponent extends ADTAbstractAnnotation {
     public abstract ResourceSystemComponent remove(ResourceSystemComponent component);
 
     public abstract List<ResourceSystemComponent> getChildren();
+
+    public abstract ResourceSystemComponent getChild(URI uri);
+
+    public abstract ResourceSystemComponent getParent(ResourceSystemComponent child);
 
     public abstract void print(PrintStream p);
 

@@ -13,7 +13,6 @@ import it.cnr.ilc.lc.omega.core.annotation.AnnotationRelationType;
 import it.cnr.ilc.lc.omega.entity.Annotation;
 import it.cnr.ilc.lc.omega.entity.AnnotationRelation;
 import it.cnr.ilc.lc.omega.entity.Content;
-import it.cnr.ilc.lc.omega.entity.TextContent;
 import it.cnr.ilc.lc.omega.exception.VirtualResourceSystemException;
 import it.cnr.ilc.lc.omega.resourcesystem.spi.ResourceSystemComponentService;
 import java.io.PrintStream;
@@ -186,7 +185,49 @@ public class Collection extends ResourceSystemComponent {
 
     @Override
     public ResourceSystemComponent remove(ResourceSystemComponent component) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        ResourceSystemComponent toBeRemoved = null;
+        try {
+            toBeRemoved = this.getChild(component.getUri());
+        } catch (IllegalArgumentException e) {
+            log.warn(e);
+        }
+        if (null != toBeRemoved) {
+            log.info("Found component uri=("+ toBeRemoved.getUri() +") to be removed ");
+            if (toBeRemoved.equals(component)) {
+                try {
+                    if (null == ResourceSystemComponent.delete(toBeRemoved)) {
+                        if (this.getParent(toBeRemoved).getChildren().remove(toBeRemoved)) {
+                            log.info("Component uri=(" + toBeRemoved.getUri() + ") removed");
+                            component = null;
+                            toBeRemoved = null;
+                            return null;
+                        } else {
+                            throw new IllegalArgumentException("component not found in collection");
+                        }
+                    } else {
+                        log.info("Component uri=(" + toBeRemoved.getUri() + ") cannot be removed");
+                    }
+                } catch (ManagerAction.ActionException ex) {
+                    log.error("On remove component", ex);
+                }
+                return toBeRemoved;
+            } else {
+                component = toBeRemoved;
+                for (ResourceSystemComponent comp : this.components) {
+                    try {
+                        return comp.remove(component);
+                    } catch (UnsupportedOperationException | IllegalArgumentException e) {
+                        log.info(e.getLocalizedMessage());
+                    }
+                }
+            }
+
+        } else {
+            log.warn("Component uri=(" + component.getUri() + ") not found or you are trying to the delete the root of the hierarchy");
+        }
+
+        throw new IllegalArgumentException(
+                "Component uri=(" + component.getUri() + ") not found or you are trying to the delete the root of the hierarchy");
     }
 
     @Override
@@ -195,7 +236,8 @@ public class Collection extends ResourceSystemComponent {
     }
 
     @Override
-    public void print(PrintStream p) {
+    public void print(PrintStream p
+    ) {
         int pad = getDepth() * 3 + this.getName().length();
         p.printf("%1$" + pad + "s [%s]\n", this.getName(), this.getType());
         for (ResourceSystemComponent component : components) {
@@ -211,8 +253,53 @@ public class Collection extends ResourceSystemComponent {
 
     @Override
     public boolean isRemovable() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        log.info("Collection uri=(" + getUri() + ") is removable? " + this.getAnnotation().isEmptyRelation());
+        return this.getAnnotation().isEmptyRelation();
     }
 
+    @Override
+    public ResourceSystemComponent getChild(URI uri) {
+        if (null != uri) {
+            for (ResourceSystemComponent component : this.components) {
+                if (uri.equals(URI.create(component.getAnnotation().getUri()))) {
+                    return component;
+                } else {
+                    try {
+                        return component.getChild(uri);
+                    } catch (UnsupportedOperationException | IllegalArgumentException e) {
+                        log.warn("" + e.getLocalizedMessage());
+                    }
+                }
+            }
+        } else {
+            throw new IllegalArgumentException("Uri cannot be null!");
+        }
+
+        throw new IllegalArgumentException(
+                "Component with uri=(" + uri + ") not found");
+    }
+
+    @Override
+    public ResourceSystemComponent getParent(ResourceSystemComponent child) {
+        if (null != child) {
+            if (this.components.contains(child)) {
+                return this;
+            } else {
+                try {
+                    for (ResourceSystemComponent component : components) {
+                        return component.getParent(child);
+                    }
+
+                } catch (UnsupportedOperationException | IllegalArgumentException e) {
+                    log.warn(e.getLocalizedMessage());
+                }
+            }
+        } else {
+            throw new IllegalArgumentException("Uri cannot be null!");
+        }
+
+        throw new IllegalArgumentException(
+                "Component with uri=(" + child.getUri() + ") not found");
+    }
 
 }

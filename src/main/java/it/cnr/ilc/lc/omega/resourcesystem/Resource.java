@@ -17,7 +17,6 @@ import it.cnr.ilc.lc.omega.core.dto.DTOValueRM;
 import it.cnr.ilc.lc.omega.entity.Annotation;
 import it.cnr.ilc.lc.omega.entity.AnnotationRelation;
 import it.cnr.ilc.lc.omega.entity.Content;
-import it.cnr.ilc.lc.omega.entity.TextContent;
 import it.cnr.ilc.lc.omega.exception.VirtualResourceSystemException;
 import it.cnr.ilc.lc.omega.resourcesystem.spi.ResourceSystemComponentService;
 import java.io.PrintStream;
@@ -66,7 +65,7 @@ public class Resource extends ResourceSystemComponent {
         try {
             if (annotation != null) {
                 if (!ResourceSystemAnnotationType.RESOURCE.name().equals(annotation.getData().getType())) {
-                    String err = "Incompatible type of loaded annotation: Rrequest " + ResourceSystemAnnotationType.RESOURCE.name()
+                    String err = "Incompatible type of loaded annotation: Request " + ResourceSystemAnnotationType.RESOURCE.name()
                             + " Found " + annotation.getData().getType();
                     annotation = null;
                     log.error(err);
@@ -92,7 +91,7 @@ public class Resource extends ResourceSystemComponent {
             annotation = (Annotation<?, ResourceSystemAnnotation>) componentManager.loadAnnotation(uri, Content.class
             );
             if (!ResourceSystemAnnotationType.RESOURCE.name().equals(annotation.getData().getType())) {
-                String err = "Incompatible type of loaded annotation: Rrequest " + ResourceSystemAnnotationType.RESOURCE.name()
+                String err = "Incompatible type of loaded annotation: Request " + ResourceSystemAnnotationType.RESOURCE.name()
                         + " Found " + annotation.getData().getType();
                 annotation = null;
                 log.error(err);
@@ -159,7 +158,7 @@ public class Resource extends ResourceSystemComponent {
 
     @Override
     public ResourceSystemComponent remove(ResourceSystemComponent component) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("You cannot remove a component from a Resource"); 
     }
 
     @Override
@@ -193,7 +192,20 @@ public class Resource extends ResourceSystemComponent {
 
     @Override
     public boolean isRemovable() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        log.info("Resource is always removable");
+        return true;
     }
 
+    @Override
+    public ResourceSystemComponent getChild(URI uri) {
+        throw new UnsupportedOperationException("Resource  " + uri.toASCIIString() + " has not children"); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ResourceSystemComponent getParent(ResourceSystemComponent child) {
+        throw new UnsupportedOperationException("You cannot search for parent starting from a Resource (leaf of hierarchy)"); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    
+    
 }
